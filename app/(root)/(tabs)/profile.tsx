@@ -4,7 +4,7 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const Profile = () => {
+const ProfileScreen = () => {
   const { signOut } = useAuth();
   const router = useRouter();
   const handleSignOut = async () => {
@@ -28,6 +28,5 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default ProfileScreen;
 
-const styles = StyleSheet.create({});
