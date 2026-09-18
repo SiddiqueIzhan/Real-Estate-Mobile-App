@@ -12,14 +12,9 @@ export interface Property {
   latitude: number;
   longitube: number;
   images: string[];
-  isFeatured: boolean;
-  isSold: boolean;
-  createdAt?: Date;
+  is_featured: boolean;
+  is_sold: boolean;
+  created_at?: string;
 }
 
-enum PropertyType {
-  apartment,
-  villa,
-  house,
-  studio,
-}
+export type PropertyType = "apartment" | "villa" | "house" | "studio";

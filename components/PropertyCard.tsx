@@ -3,7 +3,7 @@ import { Property } from "@/types/properties";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 type PropertyCardProps = {
   property: Property;
@@ -23,7 +23,7 @@ const PropertyCard = ({ property, showSave = false }: PropertyCardProps) => {
         shadowOpacity: 0.06,
         shadowRadius: 8,
         elevation: 3,
-        opacity: property.isSold ? 0.5 : 1,
+        opacity: property.is_sold ? 0.5 : 1,
       }}
     >
       {/* Image */}
@@ -54,7 +54,7 @@ const PropertyCard = ({ property, showSave = false }: PropertyCardProps) => {
           <Text className="text-blue-600 font-bold text-sm">
             {formatPrice(property.price)}
           </Text>
-          {property.isSold && (
+          {property.is_sold && (
             <View className="bg-red-50 px-2 py-0.5 rounded-full">
               <Text className="text-red-500 text-xs font-semibold">Sold</Text>
             </View>

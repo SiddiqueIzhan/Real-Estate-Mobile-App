@@ -11,7 +11,10 @@ export const useUserSync = () => {
   const authSupabase = useSupabase();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
     syncUser();
   }, [user]);
 
@@ -20,7 +23,7 @@ export const useUserSync = () => {
       .from("users")
       .select("clerk_id, is_admin")
       .eq("clerk_id", user!.id)
-      .single();
+      .maybeSingle();
 
     if (data) {
       setIsAdmin(data.is_admin ?? false);
@@ -31,7 +34,7 @@ export const useUserSync = () => {
       .from("users")
       .insert({
         clerk_id: user!.id,
-        email: user!.emailAddresses[0].emailAddress,
+        email: user!.emailAddresses[0].emailAddress ?? "",
         first_name: user!.firstName,
         last_name: user!.lastName,
         avatar_url: user!.imageUrl,

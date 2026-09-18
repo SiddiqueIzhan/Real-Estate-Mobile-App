@@ -119,7 +119,10 @@ const HomePage = () => {
                     renderItem={({ item }) => <FeaturedCard property={item} />}
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 10 }}
+                    contentContainerStyle={{
+                      paddingHorizontal: 20,
+                      paddingBottom: 10,
+                    }}
                   />
                 </View>
               )}
@@ -132,7 +135,7 @@ const HomePage = () => {
         renderItem={({ item }) => <PropertyCard property={item} />}
         ListEmptyComponent={
           <View>
-            <Text>No Properties Found</Text>
+            {loading ? <ActivityIndicator /> : <Text>No Properties Found</Text>}
           </View>
         }
       />

@@ -6,6 +6,7 @@ import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { Platform } from "react-native";
 
 function IOSTabs() {
+  const isAdmin = useUserStore((state) => state.isAdmin);
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
@@ -16,6 +17,12 @@ function IOSTabs() {
         <Icon sf="magnifyingglass" />
         <Label>Search</Label>
       </NativeTabs.Trigger>
+      {isAdmin && (
+        <NativeTabs.Trigger name="add-property">
+          <Icon sf="plus" />
+          <Label>Add Property</Label>
+        </NativeTabs.Trigger>
+      )}
       <NativeTabs.Trigger name="saved">
         <Icon sf="heart.fill" />
         <Label>Saved</Label>
