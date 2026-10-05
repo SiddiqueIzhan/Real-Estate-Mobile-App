@@ -63,7 +63,7 @@ function AndroidTabs() {
           options={{
             title: "Add Property",
             tabBarIcon: ({ color }) => (
-              <Ionicons name="add-circle-sharp" size={24} color={color} />
+              <Ionicons name="add-circle" size={24} color={color} />
             ),
           }}
         />

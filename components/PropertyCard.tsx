@@ -1,3 +1,4 @@
+import { useSavedProperty } from "@/hooks/useSavedProperty";
 import { formatPrice } from "@/lib/utils";
 import { Property } from "@/types/properties";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -7,16 +8,22 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 
 type PropertyCardProps = {
   property: Property;
+  onUnSave?: () => void;
   showSave?: boolean;
 };
 
 const PropertyCard = ({ property, showSave = false }: PropertyCardProps) => {
   const router = useRouter();
-  const isSaved = true;
+  const { isSaved, saveLoading, toggleSave } = useSavedProperty(property.id);
   return (
     <TouchableOpacity
-      onPress={() => router.push(`/(root)/property/${property.id}`)}
-      className="flex-row bg-white rounded-2xl mb-4 mx-4 overflow-hidden"
+      onPress={() =>
+        router.push({
+          pathname: "/(root)/property/[id]",
+          params: { id: property.id },
+        })
+      }
+      className="flex-row bg-white rounded-2xl mb-4 overflow-hidden"
       style={{
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
@@ -69,7 +76,7 @@ const PropertyCard = ({ property, showSave = false }: PropertyCardProps) => {
             <View className="flex-row items-center gap-1">
               <Ionicons name="expand-outline" size={11} color="#6B7280" />
               <Text className="text-xs text-gray-500">
-                {property.area_sqrt} ft²
+                {property.area_sqft} ft²
               </Text>
             </View>
           </View>
@@ -78,7 +85,11 @@ const PropertyCard = ({ property, showSave = false }: PropertyCardProps) => {
 
       {/* Save Button */}
       {showSave && (
-        <TouchableOpacity className="w-10 items-center pt-3">
+        <TouchableOpacity
+          className="w-10 items-center pt-3"
+          onPress={toggleSave}
+          disabled={saveLoading}
+        >
           <Ionicons
             name={isSaved ? "heart" : "heart-outline"}
             size={18}

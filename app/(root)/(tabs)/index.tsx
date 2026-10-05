@@ -132,7 +132,11 @@ const HomePage = () => {
             </Text>
           </View>
         }
-        renderItem={({ item }) => <PropertyCard property={item} />}
+        renderItem={({ item }) => (
+          <View className="px-5">
+            <PropertyCard property={item} showSave={true} />
+          </View>
+        )}
         ListEmptyComponent={
           <View>
             {loading ? <ActivityIndicator /> : <Text>No Properties Found</Text>}

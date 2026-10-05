@@ -27,7 +27,7 @@ const FeaturedCard = ({ property }: FeaturedCardProps) => {
         shadowOpacity: 0.08,
         shadowRadius: 12,
         elevation: 4,
-        opacity: property.isSold ? 0.5 : 1,
+        opacity: property.is_sold ? 0.5 : 1,
       }}
     >
       {/* Image */}
@@ -44,7 +44,7 @@ const FeaturedCard = ({ property }: FeaturedCardProps) => {
         </Text>
       </View>
 
-      {property.isSold && (
+      {property.is_sold && (
         <View className="absolute top-3 right-3 bg-red-500 px-3 py-1 rounded-full">
           <Text className="text-xs font-semibold text-white">Sold</Text>
         </View>
