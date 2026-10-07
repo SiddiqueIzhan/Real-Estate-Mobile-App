@@ -7,7 +7,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -27,12 +27,15 @@ const HomePage = () => {
     Property[] | []
   >([]);
   const [loading, setIsLoading] = useState(false);
+  const activeFocusRequest = useRef(0);
 
   const router = useRouter();
 
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async (requestId: number) => {
     try {
-      setIsLoading(true);
+      if (requestId === activeFocusRequest.current) {
+        setIsLoading(true);
+      }
 
       const { data: featuredData } = await supabase
         .from("properties")
@@ -40,25 +43,38 @@ const HomePage = () => {
         .eq("is_featured", true)
         .order("created_at", { ascending: false });
 
+      if (requestId !== activeFocusRequest.current) return;
+
       const { data: recommendedData } = await supabase
         .from("properties")
         .select("*")
         .eq("is_featured", false)
         .order("created_at", { ascending: false });
 
+      if (requestId !== activeFocusRequest.current) return;
+
       setFeaturedProperties(featuredData ?? []);
       setRecommendedProperties(recommendedData ?? []);
     } catch (error) {
       console.log(error);
     } finally {
-      setIsLoading(false);
+      if (requestId === activeFocusRequest.current) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      fetchProperties();
-    }, []),
+      const requestId = ++activeFocusRequest.current;
+      void fetchProperties(requestId);
+
+      return () => {
+        if (activeFocusRequest.current === requestId) {
+          activeFocusRequest.current += 1;
+        }
+      };
+    }, [fetchProperties]),
   );
 
   return (

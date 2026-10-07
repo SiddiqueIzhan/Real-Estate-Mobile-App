@@ -86,6 +86,9 @@ const SearchScreen = () => {
         }
       } catch (error) {
         console.error("Failed to fetch properties:", error);
+        if (requestId === latestRequestId.current) {
+          setPropertyList([]);
+        }
       } finally {
         if (requestId === latestRequestId.current) {
           setLoading(false);
