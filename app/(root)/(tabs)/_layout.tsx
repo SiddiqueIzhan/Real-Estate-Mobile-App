@@ -17,12 +17,10 @@ function IOSTabs() {
         <Icon sf="magnifyingglass" />
         <Label>Search</Label>
       </NativeTabs.Trigger>
-      {isAdmin && (
-        <NativeTabs.Trigger name="add-property">
-          <Icon sf="plus" />
-          <Label>Add Property</Label>
-        </NativeTabs.Trigger>
-      )}
+      <NativeTabs.Trigger name="add-property" hidden={!isAdmin}>
+        <Icon sf="plus" />
+        <Label>Add Property</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="saved">
         <Icon sf="heart.fill" />
         <Label>Saved</Label>
@@ -57,17 +55,16 @@ function AndroidTabs() {
           ),
         }}
       />
-      {isAdmin && (
-        <Tabs.Screen
-          name="add-property"
-          options={{
-            title: "Add Property",
-            tabBarIcon: ({ color }) => (
-              <Ionicons name="add-circle-sharp" size={24} color={color} />
-            ),
-          }}
-        />
-      )}
+      <Tabs.Screen
+        name="add-property"
+        options={{
+          href: isAdmin ? undefined : null,
+          title: "Add Property",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="add-circle" size={24} color={color} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="saved"
         options={{

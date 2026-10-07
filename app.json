@@ -19,7 +19,12 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.anonymous.realestatenativeapp"
     },
     "web": {
       "output": "static",
@@ -40,9 +45,22 @@
           }
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Kribb to access your location to tag property coordinates."
+        }
+      ],
       "@clerk/expo",
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Kribb to access your photos.",
+          "cameraPermission": "Allow Kribb to access your camera."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

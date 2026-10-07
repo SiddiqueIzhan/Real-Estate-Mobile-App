@@ -19,7 +19,7 @@ export const useUserSync = () => {
   }, [user]);
 
   const syncUser = async () => {
-    const { data } = await authSupabase
+    const { data, error: lookupError } = await authSupabase
       .from("users")
       .select("clerk_id, is_admin")
       .eq("clerk_id", user!.id)
@@ -30,7 +30,12 @@ export const useUserSync = () => {
       return;
     }
 
-    const { data: newUser } = await authSupabase
+    if (lookupError) {
+      setIsAdmin(false);
+      return;
+    }
+
+    const { data: newUser, error: insertError } = await authSupabase
       .from("users")
       .insert({
         clerk_id: user!.id,
@@ -41,6 +46,12 @@ export const useUserSync = () => {
       })
       .select("is_admin")
       .single();
+
+      
+    if (insertError) {
+      setIsAdmin(false);
+      return;
+    }
 
     setIsAdmin(newUser?.is_admin ?? false);
   };
