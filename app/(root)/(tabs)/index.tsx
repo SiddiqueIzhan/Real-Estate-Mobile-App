@@ -6,8 +6,8 @@ import { useUser } from "@clerk/expo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -55,9 +55,11 @@ const HomePage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchProperties();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchProperties();
+    }, []),
+  );
 
   return (
     <SafeAreaView>

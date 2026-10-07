@@ -12,7 +12,11 @@ type PropertyCardProps = {
   showSave?: boolean;
 };
 
-const PropertyCard = ({ property, showSave = false }: PropertyCardProps) => {
+const PropertyCard = ({
+  property,
+  onUnSave,
+  showSave = false,
+}: PropertyCardProps) => {
   const router = useRouter();
   const { isSaved, saveLoading, toggleSave } = useSavedProperty(property.id);
   return (
@@ -87,7 +91,7 @@ const PropertyCard = ({ property, showSave = false }: PropertyCardProps) => {
       {showSave && (
         <TouchableOpacity
           className="w-10 items-center pt-3"
-          onPress={toggleSave}
+          onPress={() => toggleSave(onUnSave)}
           disabled={saveLoading}
         >
           <Ionicons

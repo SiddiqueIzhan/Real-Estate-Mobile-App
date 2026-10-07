@@ -88,12 +88,15 @@ export default function CreatePropertyScreen() {
       return;
     }
 
+    const remaining = 6 - form.localImages.length;
+    if (remaining <= 0) return;
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
       allowsMultipleSelection: true,
       quality: 0.7,
       base64: true,
-      selectionLimit: 6,
+      selectionLimit: remaining,
     });
 
     if (result.canceled) return;
@@ -103,41 +106,45 @@ export default function CreatePropertyScreen() {
     const uploadedUrls: string[] = [];
     const previewUris: string[] = [];
 
-    for (const asset of result.assets) {
-      try {
-        const filename = `property_${Date.now()}_${Math.random()
-          .toString(36)
-          .slice(2)}.jpg`;
+    try {
+      for (const asset of result.assets) {
+        try {
+          const filename = `property_${Date.now()}_${Math.random()
+            .toString(36)
+            .slice(2)}.jpg`;
 
-        const base64 = asset.base64!;
-        const buffer = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+          const base64 = asset.base64!;
+          const buffer = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
 
-        const { error } = await authSupabase.storage
-          .from("property-images")
-          .upload(filename, buffer, {
-            contentType: "image/jpeg",
-            upsert: false,
-          });
+          const { error } = await authSupabase.storage
+            .from("property-images")
+            .upload(filename, buffer, {
+              contentType: "image/jpeg",
+              upsert: false,
+            });
 
-        if (error) throw error;
+          if (error) throw error;
 
-        const { data: urlData } = authSupabase.storage
-          .from("property-images")
-          .getPublicUrl(filename);
+          const { data: urlData } = authSupabase.storage
+            .from("property-images")
+            .getPublicUrl(filename);
 
-        uploadedUrls.push(urlData.publicUrl);
-        previewUris.push(asset.uri);
-      } catch (err) {
-        console.error("Upload error:", err);
-        Alert.alert("Upload Failed", "One or more images failed to upload.");
+          uploadedUrls.push(urlData.publicUrl);
+          previewUris.push(asset.uri);
+        } catch (err) {
+          console.error("Upload error:", err);
+          Alert.alert("Upload Failed", "One or more images failed to upload.");
+        }
       }
-    }
 
-    updateForm({
-      images: [...form.images, ...uploadedUrls],
-      localImages: [...form.localImages, ...previewUris],
-    });
-    setUploadingImages(false);
+      setForm((prev) => ({
+        ...prev,
+        images: [...prev.images, ...uploadedUrls],
+        localImages: [...prev.localImages, ...previewUris],
+      }));
+    } finally {
+      setUploadingImages(false);
+    }
   };
 
   const handleRemoveImage = (index: number) => {

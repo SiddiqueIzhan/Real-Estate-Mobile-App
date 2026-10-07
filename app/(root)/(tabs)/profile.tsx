@@ -44,7 +44,7 @@ const ProfileScreen = () => {
   const [viewProfilePic, setViewProfilePic] = useState(false);
   const { signOut } = useAuth();
   const router = useRouter();
-  const ADMIN_EMAIL_ID = "izhanvk@gmail.com";
+  const ADMIN_EMAIL_ID = process.env.ADMIN_EMAIL_ID;
 
   const handleSignOut = async () => {
     try {
@@ -197,7 +197,7 @@ const ProfileScreen = () => {
           {user.firstName} {user.lastName}
         </Text>
         <Text className="text-gray-500 mt-1">
-          {user.emailAddresses[0].emailAddress}
+          {user?.emailAddresses[0]?.emailAddress}
         </Text>
       </View>
       <View className="px-6 gap-2">
@@ -218,7 +218,8 @@ const ProfileScreen = () => {
           label="Settings"
           onPress={() => Alert.alert("Coming Soon", "Settings coming soon!")}
         />
-        {user.emailAddresses[0].emailAddress !== ADMIN_EMAIL_ID && (
+        {user.primaryEmailAddress?.emailAddress?.toLowerCase() !==
+          ADMIN_EMAIL_ID && (
           <MenuItem
             icon="help-circle-outline"
             label="Help & Support"

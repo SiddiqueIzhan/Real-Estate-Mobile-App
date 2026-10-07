@@ -47,7 +47,7 @@ const PropertyDetailsScreen = () => {
   const { id } = useLocalSearchParams();
   const authSupabase = useSupabase();
   const [property, setProperty] = useState<Property | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [activeImage, setActiveImage] = useState<number>(0);
   const [imageViewing, setImageViewing] = useState<boolean>(false);
   const { isAdmin } = useUserStore();
@@ -58,7 +58,7 @@ const PropertyDetailsScreen = () => {
 
   const { width } = Dimensions.get("screen");
 
-  const ADMIN_PHONE = "7353790604";
+  const ADMIN_PHONE = process.env.PHONE_NUMBER;
 
   const mapUrl = property
     ? `https://www.openstreetmap.org/export/embed.html?bbox=${
@@ -82,18 +82,28 @@ const PropertyDetailsScreen = () => {
   };
 
   const fetchPropertyByID = async () => {
+    setLoading(true);
+    setProperty(null);
+
     try {
-      setLoading(true);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("properties")
         .select("*")
         .eq("id", id)
         .single();
 
-      setProperty(data);
-      setLoading(false);
+      if (error) {
+        console.log(error);
+        setProperty(null);
+        return;
+      }
+
+      setProperty(data ?? null);
     } catch (error) {
       console.log(error);
+      setProperty(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -107,12 +117,27 @@ const PropertyDetailsScreen = () => {
         {
           text: "Mark Sold",
           onPress: async () => {
-            await authSupabase
-              .from("properties")
-              .update({ is_sold: true })
-              .eq("id", id);
+            try {
+              const { data, error } = await authSupabase
+                .from("properties")
+                .update({ is_sold: true })
+                .eq("id", id)
+                .select();
 
-            setProperty((prev) => (prev ? { ...prev, is_sold: true } : prev));
+              if (error || !data?.length) {
+                console.error("Failed to mark property as sold:", error);
+                Alert.alert(
+                  "Update failed",
+                  error?.message ?? "The property could not be updated.",
+                );
+                return;
+              }
+
+              setProperty((prev) => (prev ? { ...prev, is_sold: true } : prev));
+            } catch (err) {
+              console.error("Failed to mark property as sold:", err);
+              Alert.alert("Update failed", "The property could not be updated.");
+            }
           },
         },
       ]);
@@ -132,8 +157,25 @@ const PropertyDetailsScreen = () => {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            await authSupabase.from("properties").delete().eq("id", id);
-            router.back();
+            try {
+              const { data, error } = await authSupabase
+                .from("properties")
+                .delete()
+                .eq("id", id)
+                .select();
+              if (error || !data?.length) {
+                console.error("Failed to delete property:", error);
+                Alert.alert(
+                  "Delete failed",
+                  error?.message ?? "The property could not be deleted.",
+                );
+                return;
+              }
+              router.back();
+            } catch (error) {
+              console.error("Failed to delete property:", error);
+              Alert.alert("Delete failed", "The property could not be deleted.");
+            }
           },
         },
       ]);
@@ -154,9 +196,25 @@ const PropertyDetailsScreen = () => {
     );
   }
 
+  if (!property) {
+    return (
+      <View className="flex-1 items-center justify-center gap-4 bg-white px-6">
+        <Text className="text-lg font-semibold text-gray-900">
+          Property not found
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="rounded-xl bg-blue-600 px-5 py-3"
+        >
+          <Text className="font-semibold text-white">Go back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <ScrollView className="flex-1 bg-white">
-      <View>
+      <SafeAreaView>
         <FlatList
           keyExtractor={(_, i) => i.toString()}
           data={property?.images}
@@ -187,7 +245,7 @@ const PropertyDetailsScreen = () => {
               <Ionicons name="arrow-back" size={20} color="#111827" />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={toggleSave}
+              onPress={() => toggleSave()}
               disabled={saveLoading}
               className="w-10 h-10 bg-white rounded-full items-center justify-center"
               style={{ elevation: 3 }}
@@ -206,7 +264,7 @@ const PropertyDetailsScreen = () => {
             {activeImage + 1}/{property?.images.length}
           </Text>
         </View>
-      </View>
+      </SafeAreaView>
 
       <View
         className="px-5 pt-5 pb-8"
@@ -221,7 +279,7 @@ const PropertyDetailsScreen = () => {
           {property?.is_featured ? (
             <View className="bg-amber-50 px-3 py-1 rounded-full">
               <Text className="text-amber-600 text-xs font-semibold">
-                {property?.is_featured}
+                Featured
               </Text>
             </View>
           ) : (

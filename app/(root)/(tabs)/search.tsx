@@ -7,7 +7,7 @@ import { useFilterStore } from "@/store/filterStore";
 import { Property } from "@/types/properties";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -37,6 +37,8 @@ const SearchScreen = () => {
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [propertyList, setPropertyList] = useState<Property[]>([]);
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+  const latestRequestId = useRef(0);
 
   const { openFilters } = useLocalSearchParams();
 
@@ -47,39 +49,60 @@ const SearchScreen = () => {
     minPrice !== null,
   ].filter(Boolean).length;
 
-  const fetchPropertyData = async () => {
-    setLoading(true);
-    try {
-      let query = supabase.from("properties").select("*");
+  const fetchPropertyData = useCallback(
+    async (searchTerm: string) => {
+      const requestId = ++latestRequestId.current;
+      setLoading(true);
+      try {
+        let query = supabase.from("properties").select("*");
 
-      if (search) {
-        query = query.or("`title.ilike.%${search}%,city.ilike.%${search}%`");
-      }
-      if (type) {
-        query = query.eq("type", type);
-      }
-      if (bedrooms) {
-        query = query.eq("bedrooms", bedrooms);
-      }
-      if (minPrice) {
-        query = query.gte("price", minPrice);
-      }
-      if (maxPrice) {
-        query = query.lte("price", maxPrice);
-      }
+        if (searchTerm) {
+          const term = searchTerm.replace(/[,()]/g, " ");
+          query = query.or(`title.ilike.%${term}%,city.ilike.%${term}%`);
+        }
+        if (type) {
+          query = query.eq("type", type);
+        }
+        if (bedrooms) {
+          query =
+            bedrooms >= 4
+              ? query.gte("bedrooms", 4)
+              : query.eq("bedrooms", bedrooms);
+        }
+        if (minPrice) {
+          query = query.gte("price", minPrice);
+        }
+        if (maxPrice) {
+          query = query.lte("price", maxPrice);
+        }
 
-      const { data } = await query.order("created_at", { ascending: false });
+        const { data, error } = await query.order("created_at", {
+          ascending: false,
+        });
+        if (error) throw error;
 
-      setPropertyList(data ?? []);
-      setLoading(false);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+        if (requestId === latestRequestId.current) {
+          setPropertyList(data ?? []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch properties:", error);
+      } finally {
+        if (requestId === latestRequestId.current) {
+          setLoading(false);
+        }
+      }
+    },
+    [type, bedrooms, minPrice, maxPrice],
+  );
 
   useEffect(() => {
-    fetchPropertyData();
-  }, [type, search, bedrooms, minPrice, maxPrice]);
+    const timeout = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timeout);
+  }, [search]);
+
+  useEffect(() => {
+    void fetchPropertyData(debouncedSearch);
+  }, [fetchPropertyData, debouncedSearch]);
 
   useEffect(() => {
     if (openFilters) {

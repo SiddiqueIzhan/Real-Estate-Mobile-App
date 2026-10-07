@@ -4,7 +4,7 @@ import { Property } from "@/types/properties";
 import { useAuth } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -31,21 +31,27 @@ const SavedPropertyScreen = () => {
   const fetchSaved = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
-    const { data } = await authSupabase
-      .from("saved_properties")
-      .select("id, property_id, properties(*)")
-      .eq("user_clerk_id", userId)
-      .order("id", { ascending: false });
+    try {
+      const { data, error } = await authSupabase
+        .from("saved_properties")
+        .select("id, property_id, properties(*)")
+        .eq("user_clerk_id", userId)
+        .order("id", { ascending: false });
+      if (error) throw error;
 
-    setSavedProperties((data as unknown as SavedProperty[]) ?? []);
-    setLoading(false);
+      setSavedProperties((data as unknown as SavedProperty[]) ?? []);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
 
   // Refresh every time the tab comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchSaved();
-    }, [fetchSaved])
+    }, [fetchSaved]),
   );
 
   return (

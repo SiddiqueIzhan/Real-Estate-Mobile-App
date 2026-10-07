@@ -1,7 +1,7 @@
 import { useFilterStore } from "@/store/filterStore";
 import { PropertyType } from "@/types/properties";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   ScrollView,
@@ -29,8 +29,19 @@ const FilterModal = ({
     setMaxPrice,
     resetFilters,
   } = useFilterStore();
-  const [localMin, setLocalMin] = useState("");
-  const [localMax, setLocalMax] = useState("");
+  const [localMin, setLocalMin] = useState(
+    minPrice === null ? "" : String(minPrice),
+  );
+  const [localMax, setLocalMax] = useState(
+    maxPrice === null ? "" : String(maxPrice),
+  );
+
+  useEffect(() => {
+    if (visible) {
+      setLocalMin(minPrice === null ? "" : String(minPrice));
+      setLocalMax(maxPrice === null ? "" : String(maxPrice));
+    }
+  }, [visible, minPrice, maxPrice]);
 
   const TYPES: { label: string; value: PropertyType }[] = [
     { label: "All", value: null },
@@ -82,8 +93,10 @@ const FilterModal = ({
   };
 
   const handleApply = () => {
-    setMinPrice(Number(localMin));
-    setMaxPrice(Number(localMax));
+    const toNum = (v: string) =>
+      v.trim() && !isNaN(Number(v)) ? Number(v) : null;
+    setMinPrice(toNum(localMin));
+    setMaxPrice(toNum(localMax));
     onClose();
   };
 
